@@ -2,6 +2,8 @@
 
 var bcrypt = require('bcrypt');
 var users = global.nss.db.collection('users');
+var Mongo = require('mongodb');
+var _ = require('lodash');
 
 class User
 {
@@ -13,29 +15,7 @@ class User
 
   save(fn)
   {
-    if(this._id)
-    {
-      saveUser(this);
-    }
-    else
-    {
-      User.findByEmail(this.email, user=>
-      {
-        if(user)
-        {
-          fn(null);
-        }
-        else
-        {
-          saveUser(this);
-        }
-      });
-    }
-
-    function saveUser(user)
-    {
-      users.save(user, (e, user)=>fn(user));
-    }
+    users.save(this, (e, user)=>fn(user));
   }
 
   static findByEmail(email, fn)
@@ -43,11 +23,64 @@ class User
     users.findOne({email: email}, (e, user)=>fn(user));
   }
 
+  static findByUserId(userId, fn)
+  {
+    if(String(userId).length === 24)
+    {
+      userId = Mongo.ObjectID(userId);
+      users.findOne({_id: userId}, (e, user)=>
+      {
+        if(user)
+        {
+          user = _.create(User.prototype, user);
+          fn(user);
+        }
+        else
+        {
+          fn(null);
+        }
+      });
+    }
+    else
+    {
+      fn(null);
+    }
+  }
+
   static register(obj, fn)
   {
-    var user = new User(obj);
-    user.save((u)=>fn(u));
+    User.findByEmail(obj.email, user=>
+    {
+      if(user)
+      {
+        fn(null);
+      }
+      else
+      {
+        var newUser = new User(obj);
+        newUser.save(u=>fn(u));
+      }
+    });
+  }
+
+  static login (obj, fn){
+    User.findByEmail(obj.email, user=>{
+      if(user){
+        var isMatch = bcrypt.compareSync(obj.password, user.password);
+        if(isMatch){
+          fn(user);
+        }
+        else{
+          fn(null);
+        }
+      }
+      else{
+        fn(null);
+      }
+    });
+
   }
 }
+
 
 module.exports = User;
