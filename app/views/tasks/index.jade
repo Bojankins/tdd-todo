@@ -1,0 +1,19 @@
+extends ../shared/template
+
+block content
+  h1 Tasks
+
+  table
+    thead
+      tr
+        th Title
+        th Due Date
+        th Complete
+    tbody
+      each task in tasks
+        tr
+          td(style='color:#{task.color};')= task.title
+          //- td= task.title
+          td= task.due
+          td= task.isComplete
+          //- task.isComplete ? 'Yes' : 'No';

@@ -1,0 +1,13 @@
+extends ../shared/template
+
+block content
+
+  form(method='POST' action='/signup')
+    input(type='email' name='email' placeholder='Email')
+    input(type='password' name='password' placeholder='Password')
+    button Signup
+
+  form(method='GET' action='/login')
+    input(type='email' name='email' placeholder='Email')
+    input(type='password' name='password' placeholder='Password')
+    button Login

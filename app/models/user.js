@@ -64,6 +64,7 @@ class User
   }
 
   static login (obj, fn){
+    console.log(bcrypt.hashSync(obj.password, 10));
     User.findByEmail(obj.email, user=>{
       if(user){
         var isMatch = bcrypt.compareSync(obj.password, user.password);
